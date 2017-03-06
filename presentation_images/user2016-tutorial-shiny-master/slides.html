@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Joe Cheng &lt;joe@rstudio.com&gt;" />
+  <title>Effective Shiny Programming</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="slides_files/reveal.js-3.2.0/css/reveal.css"/>
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="slides_files/reveal.js-3.2.0/css/theme/night.css" id="theme">
+
+<style type="text/css">
+.reveal section img {
+  background: rgba(255, 255, 255, 0.85);
+}
+</style>
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="slides.css"/>
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'slides_files/reveal.js-3.2.0/css/print/pdf.css' : 'slides_files/reveal.js-3.2.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="slides_files/reveal.js-3.2.0/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Effective Shiny Programming</h1>
+    <h2 class="author">Joe Cheng <a href="mailto:joe@rstudio.com">&lt;joe@rstudio.com&gt;</a></h2>
+    <h3 class="date">#useR2016 — June 27, 2016</h3>
+</section>
+
+<section id="before-we-begin" class="slide level2">
+<h1>Before we begin</h1>
+<p>Wifi username: <code>useR2016</code> Password: <code>Conf@1039</code></p>
+<p> </p>
+<p>We’ll use RStudio Server for this tutorial. To grab an account:</p>
+<h4 id="httpuser2016.joecheng.comsignup"><a href="http://user2016.joecheng.com/signup/" class="uri">http://user2016.joecheng.com/signup/</a></h4>
+<p>(Don’t share user accounts with neighbors—if they sign in with your username, RStudio Server will end your session!)</p>
+<p> </p>
+<p>Slides and exercises also available on GitHub:</p>
+<p><a href="https://github.com/jcheng5/user2016-tutorial-shiny" class="uri">https://github.com/jcheng5/user2016-tutorial-shiny</a></p>
+</section>
+<section id="todays-agenda" class="slide level2">
+<h1>Today’s agenda</h1>
+<ul>
+<li>Effective reactive programming</li>
+<li>Checking preconditions with <code>req()</code></li>
+<li>Preview of upcoming features
+<ul>
+<li><code>insertUI</code>/<code>removeUI</code></li>
+<li>Using databases with Shiny</li>
+<li>Bookmarkable state</li>
+</ul></li>
+</ul>
+</section>
+<section id="effective-reactive-programming" class="slide level2">
+<h1>Effective reactive programming</h1>
+<p> <br />
+ <br />
+ <br />
+ <br />
+ <br />
+ <br />
+ </p>
+<p>We’ll have to keep things moving along to be done on time.</p>
+<p>If you have trouble keeping up, you can try again later: Google “shiny conference videos”</p>
+</section>
+<section id="warm-up-side-effects" class="slide level2">
+<h1>Warm up: Side effects</h1>
+</section>
+<section class="slide level2">
+
+<p>Functions can be executed for one or both of the following reasons:</p>
+<ol type="1">
+<li class="fragment">You want its return value.</li>
+<li class="fragment">You want it to have <strong>some other effect</strong>.</li>
+</ol>
+<div class="fragment">
+<p>These are (a bit misleadingly) called <em>side effects</em>. Any effect that is not the return value is a side effect.</p>
+</div>
+</section>
+<section id="functions-with-side-effects" class="slide level2">
+<h1>Functions with side effects</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">write.csv</span>(...)
+
+<span class="kw">plot</span>(cars)
+
+<span class="kw">print</span>(x)
+
+<span class="kw">httr.POST</span>(...)
+
+<span class="kw">alarm</span>()</code></pre></div>
+</section>
+<section id="more-side-effects" class="slide level2">
+<h1>More side effects</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sets a variable in a parent environment</span>
+value &lt;&lt;-<span class="st"> </span><span class="dv">10</span>
+
+<span class="co"># Loads into global env by default</span>
+<span class="kw">source</span>(<span class="st">&quot;functions.R&quot;</span>)
+
+<span class="co"># Modifies the global search list</span>
+<span class="kw">library</span>(dplyr)
+
+<span class="co"># Only if foo is an env, ref class, or R6</span>
+foo$bar &lt;-<span class="st"> </span><span class="ot">TRUE</span></code></pre></div>
+</section>
+<section id="not-side-effects-when-inside-a-function" class="slide level2">
+<h1>NOT side effects (when inside a function)</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Modifying *local* variables</span>
+value &lt;-<span class="st"> </span><span class="dv">10</span>
+
+<span class="co"># Creating most kinds of objects</span>
+<span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>)
+
+<span class="co"># Data frames are pass-by-value in R so this is OK</span>
+dataset &lt;-<span class="st"> </span>dataset %&gt;%<span class="st"> </span><span class="kw">filter</span>(count &gt;<span class="st"> </span><span class="dv">3</span>)
+
+<span class="co"># Most calculations</span>
+a +<span class="st"> </span><span class="dv">1</span>
+<span class="kw">summary</span>(pressure)
+<span class="kw">lm</span>(speed ~<span class="st"> </span>dist, <span class="dt">data =</span> cars)
+<span class="kw">predict</span>(wfit, <span class="dt">interval =</span> <span class="st">&quot;prediction&quot;</span>)</code></pre></div>
+</section>
+<section id="ehhh-not-side-effects" class="slide level2">
+<h1>Ehhh… Not side effects</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Reading from disk</span>
+<span class="kw">readLines</span>(<span class="st">&quot;data.csv&quot;</span>)
+
+<span class="co"># Making HTTP GET requests</span>
+<span class="kw">httr.GET</span>(<span class="st">&quot;https://api.example.com/data.json&quot;</span>)
+
+<span class="co"># Reading global variables</span>
+.Random.seed
+
+<span class="co"># Modifying the random seed... ehhhhhh...</span>
+<span class="kw">runif</span>(<span class="dv">10</span>)</code></pre></div>
+<p>If executing your function/expression <strong>leaves the state of the world a little different</strong> than before it executed, <strong>it has side effects</strong>.</p>
+<p>But if “what happens in <code>func</code>, stays in <code>func</code>” (besides the return value), then it doesn’t have side effects.</p>
+</section>
+<section id="side-effect-quiz" class="slide level2">
+<h1>Side effect quiz</h1>
+<p>For each function, write Yes if it has side effects, and No if not.</p>
+</section>
+<section id="question-1" class="slide level2">
+<h1>Question 1</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(a, b) {
+  (b -<span class="st"> </span>a) /<span class="st"> </span>a
+}</code></pre></div>
+</section>
+<section id="question-2" class="slide level2">
+<h1>Question 2</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(values) {
+  <span class="kw">globalenv</span>()$values &lt;-<span class="st"> </span>values
+  values
+}</code></pre></div>
+</section>
+<section id="question-3" class="slide level2">
+<h1>Question 3</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function() {
+  <span class="kw">options</span>(<span class="dt">digits.secs =</span> <span class="dv">6</span>)
+  <span class="kw">as.character</span>(<span class="kw">Sys.time</span>())
+}</code></pre></div>
+</section>
+<section id="question-4" class="slide level2">
+<h1>Question 4</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(df) {
+  df$foo &lt;-<span class="st"> </span><span class="kw">factor</span>(df$foo)
+  df
+}</code></pre></div>
+</section>
+<section id="question-5" class="slide level2">
+<h1>Question 5</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function() {
+  <span class="kw">readLines</span>(<span class="st">&quot;~/data/raw.txt&quot;</span>)
+}</code></pre></div>
+</section>
+<section id="question-6" class="slide level2">
+<h1>Question 6</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(values) {
+  <span class="kw">hist</span>(values, <span class="dt">plot =</span> <span class="ot">TRUE</span>)
+}</code></pre></div>
+</section>
+<section id="question-7" class="slide level2">
+<h1>Question 7</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function() {
+  <span class="co"># Create temp file, and delete when function exits</span>
+  filePath &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="dt">fileext =</span> <span class="st">&quot;.png&quot;</span>)
+  <span class="kw">on.exit</span>(<span class="kw">file.unlink</span>(filePath))
+
+  <span class="co"># Plot to the temp file as PNG image</span>
+  <span class="kw">png</span>(filePath); <span class="kw">plot</span>(cars); <span class="kw">dev.off</span>()
+
+  <span class="co"># Return the contents of the temp file</span>
+  <span class="kw">readBin</span>(filePath, <span class="st">&quot;raw&quot;</span>, <span class="dt">n =</span> <span class="kw">file.info</span>(filePath)$size)
+}</code></pre></div>
+</section>
+<section id="answers" class="slide level2">
+<h1>Answers</h1>
+<ol type="1">
+<li>No</li>
+<li>Yes</li>
+<li>Yes</li>
+<li>No</li>
+<li>No</li>
+<li>Yes</li>
+<li>Mostly no</li>
+</ol>
+</section>
+<section class="slide level2">
+
+<p><strong>Side effects make code harder to reason about,</strong> since order of execution of different side-effecty functions can matter (in non-obvious ways).</p>
+<p><strong>But we still need them.</strong> Without side effects, our programs are useless! (If a program executes but has no observable interactions with the world, you may as well have not executed it at all!)</p>
+</section>
+<section id="reactive-programming" class="slide level2">
+<h1>Reactive programming</h1>
+<aside class="notes">
+<p>Reactivity can be your best friend—or your worst enemy. If you follow some rules of the road, and trust them, then you’ll end up moving in the right direction.</p>
+<p>We haven’t been very upfront about these rules; mostly I’ve disseminated them in replies to shiny-discuss threads. So even if you’ve been following Shiny development pretty closely, it’s quite likely that some of the things I’ll discuss today will be news to you.</p>
+<p>One of my top priorities in 2016 is to get the message out there about how to use reactivity properly, and it starts right here, at this conference, in this tutorial. So your feedback is <em>most</em> welcome after the tutorial.</p>
+<p>You ignore these principles at your peril! The temptation is especially strong among smart, experienced programmers. Resist it—at least until you’ve tried to do it the right way first. These aren’t rules that people say but don’t expect anyone to completely follow, like “write unit tests for every function”, “floss after every meal”, etc. These are more like, “bring your car to a stop when you come to a stop sign”.</p>
+<p>If you’ve tried to do it the right way and still really want to break these rules, email me at <a href="mailto:joe@rstudio.com">joe@rstudio.com</a> and let’s talk about it. But please, do that before sinking weeks or months into your app, while I can still help you!</p>
+</aside>
+</section>
+<section id="ladder-of-enlightenment" class="slide level2">
+<h1>Ladder of Enlightenment</h1>
+<ol type="1">
+<li>Made it halfway through the tutorial. Has used <code>output</code> and <code>input</code>.</li>
+<li>Made it entirely through the tutorial. Has used reactive expressions (<code>reactive()</code>).</li>
+<li>Has used <code>observe()</code> and/or <code>observeEvent()</code>. Has written reactive expressions that depend on other reactive expressions. Has used <code>isolate()</code> properly.</li>
+<li>Can say confidently when to use <code>reactive()</code> vs. <code>observe()</code>.</li>
+<li>Writes higher-order reactives (functions that have reactive expressions as input parameters and return values).</li>
+<li>Understands that reactive expressions are monads.</li>
+</ol>
+<aside class="notes">
+<p>I’d like to propose a ladder of Shiny reactivity “enlightenment”.</p>
+<p>Take a moment to read this list, then discuss with the people around you where you currently rank. Don’t be shy or embarrassed if you’re at level one or two, we’re all here to learn! Go ahead, I’ll give you two minutes.</p>
+<p>How many of you feel like you’re at levels one or two?</p>
+<p>How many are at level three?</p>
+<p>How many are at level four?</p>
+<p>Anyone besides Hadley and Winston at five or six?</p>
+<p>So at level three, you can write quite complicated applications. And many of you have. This is a dangerous zone. Your apps generally work, but sometimes you struggle with why things are executing too much, or not enough. Each new feature you add to your app seems to increase the overall complexity superlinearly.</p>
+<p>Our goal today is to get everyone, or at least most of you, to level four. When you have a firm grasp on the reactive primitives we’ve built into Shiny, you can build complicated networks of reactive expressions and observers, with confidence. Combine that knowledge with the new modules feature, which Garrett will talk about tomorrow, and you’ve got all the tools you need to write large yet maintainable Shiny apps.</p>
+<p>Level five or six is where the real fun begins. We won’t get there today, but if you’re interested in learning more, please let me know! I’d love to talk to you. Maybe we can organize a group vchat or webinar or something, and eventually spin that in to an article or three.</p>
+</aside>
+</section>
+<section id="exercise-0" class="slide level2">
+<h1>Exercise 0</h1>
+<p>Open <code>Exercise_00.R</code> and complete the server function. Make the plot output show a simple plot of the first <code>nrows</code> rows of a built-in dataset.</p>
+<p>You have 3 minutes!</p>
+<p>Hint: <code>plot(head(cars, nrows))</code></p>
+<div class="tip">
+<p>Just joining us? Go to <a href="http://user2016.joecheng.com/signup/" class="uri">http://user2016.joecheng.com/signup/</a> to grab an RStudio Server account, where you’ll find these slides and the exercise files.</p>
+</div>
+<aside class="notes">
+<p>We’ll get started with a really basic example app, just to get the juices flowing a little bit.</p>
+<p>Open up Exercise_00.R; it should be in your Files pane. You should see the beginnings of a Shiny app. The UI definition is complete, but the server function is blank. I want you to fill in that server function. Make the plot output show a simple plot of the first <code>nrows</code> rows of a built-in dataset of your choice. If you can’t think of any, use <code>cars</code>.</p>
+<p>So basically, make the Shiny equivalent of this: <code>plot(head(cars, nrows))</code></p>
+<p>I’ll give you five minutes. That might be way too much time for some of you, but it’ll give us a chance to shake out any technical issues. If you need help, talk to your neighbors, or flag down one of the TAs or myself. If you have extra time, get to know your neighbors a little more.</p>
+</aside>
+</section>
+<section id="solution" class="slide level2">
+<h1>Solution</h1>
+<pre><code>output$plot &lt;- renderPlot({
+  plot(head(cars, input$nrows))
+})</code></pre>
+<aside class="notes">
+<p>OK, we’re back. Hopefully your code looks something like this.</p>
+<p>How many of you ended up with this answer? Anyone come up with something different?</p>
+<p>What we don’t want is something like this:</p>
+</aside>
+</section>
+<section id="anti-solution" class="slide level2">
+<h1>Anti-solution</h1>
+<pre><code>observe({
+  df &lt;- head(cars, input$nrows)
+  output$plot &lt;- renderPlot(plot(df))
+})</code></pre>
+<aside class="notes">
+<p>This pattern of putting renderPlot inside of an observe, usually means the author has a fundamental misconception of what it means to assign a render code block to an output slot.</p>
+</aside>
+</section>
+<section class="slide level2">
+
+<p><code>output$plot1 &lt;- renderPlot(...)</code></p>
+<ul>
+<li class="fragment"><strong>DOESN’T mean:</strong> “Go update the output <code>&quot;plot1&quot;</code> with the result of this code.”</li>
+<li class="fragment"><strong>DOES mean:</strong> “This code is the <em>recipe</em> that should be used to update the output <code>&quot;plot1&quot;</code>.”</li>
+</ul>
+<aside class="notes">
+<p>Historically, we’ve asked you to take it on faith that whenever <code>input$nrows</code> changes, any dependent outputs, reactive expressions, and observers will do the right thing. But how does Shiny know how the code is related? How does it know which outputs depend on which inputs, reactives, etc.?</p>
+<p>There are really two possibilities: <em>static</em> analysis, where we’d examine your code, looking for reactive-looking things; and <em>runtime</em> analysis, where we’d execute your code and see what happens.</p>
+<p>We do the latter. Shiny just executes your code and sees what happens. It eavesdrops to see what reactive values (like <code>input</code>) or reactive expressions your output reads, and whatever it reads is considered a “dependency”. Any changes to one of those dependencies means the output is considered out-of-date, or “invalidated”, and might need to be re-executed.</p>
+</aside>
+</section>
+<section id="takeaway" class="slide level2 takeaway">
+<h1>Takeaway</h1>
+<h3 id="know-the-difference-between-telling-shiny-to-do-something-and-telling-shiny-how-to-do-something.">Know the difference between telling Shiny <em>to</em> do something, and telling Shiny <em>how to</em> do something.</h3>
+</section>
+<section id="reactive-expressions" class="slide level2">
+<h1>Reactive expressions</h1>
+<div class="fragment">
+<p><strong>Expressions</strong> that are <strong>reactive</strong> <span class="fragment">(obviously)</span></p>
+</div>
+<ul>
+<li class="fragment"><strong>Expression:</strong> Code that <em>produces a value</em></li>
+<li class="fragment"><strong>Reactive:</strong> <em>Detects changes</em> in anything reactive it reads</li>
+</ul>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(input, output, session) {
+  <span class="co"># When input$min_size or input$max_size change, large_diamonds</span>
+  <span class="co"># will be notified about it.</span>
+  large_diamonds &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+    diamonds %&gt;%
+<span class="st">      </span><span class="kw">filter</span>(carat &gt;=<span class="st"> </span>input$min_size) %&gt;%
+<span class="st">      </span><span class="kw">filter</span>(carat &lt;<span class="st"> </span>input$max_size)
+  })
+  
+  <span class="co"># If that happens, large_diamonds will notify output$table.</span>
+  output$table &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
+    <span class="kw">large_diamonds</span>() %&gt;%<span class="st"> </span><span class="kw">select</span>(carat, price)
+  })</code></pre></div>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  ... continued ...
+
+  <span class="co"># Reactive expressions can use other reactive expressions.</span>
+  mean_price &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+    <span class="kw">mean</span>(<span class="kw">large_diamonds</span>()$price)
+  })
+  
+  <span class="co"># large_diamonds and mean_price will both notify output$message</span>
+  <span class="co"># of changes they detect.</span>
+  output$message &lt;-<span class="st"> </span><span class="kw">renderText</span>({
+    <span class="kw">paste0</span>(<span class="kw">nrow</span>(<span class="kw">large_diamonds</span>()), <span class="st">&quot; diamonds in that range, &quot;</span>,
+      <span class="st">&quot;with an average price of $&quot;</span>, <span class="kw">mean_price</span>())
+  })
+<span class="er">}</span></code></pre></div>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(input, output, session) {
+  
+  <span class="co"># This DOESN&#39;T work.</span>
+  large_diamonds &lt;-<span class="st"> </span>diamonds %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(carat &gt;=<span class="st"> </span>input$min_size) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(carat &lt;<span class="st"> </span>input$max_size)
+  
+  output$table &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
+    large_diamonds %&gt;%<span class="st"> </span><span class="kw">select</span>(carat, price)
+  })
+}</code></pre></div>
+<p><code>large_diamonds</code> would only be calculated once, as the session starts (i.e. as the page first loads in a browser).</p>
+</section>
+<section id="exercise-1" class="slide level2">
+<h1>Exercise 1</h1>
+<p>Open up the file <code>Exercise_01.R</code>.</p>
+<p>There’s a new <code>tableOutput(&quot;table&quot;)</code> in ui.R. Have it show the same data frame that is being plotted, using <code>renderTable</code>.</p>
+<p><strong>Make sure that the <code>head()</code> operation isn’t performed more than once for each change to <code>input$nrows</code>.</strong></p>
+<p>You have 5 minutes.</p>
+<div class="tip">
+<p>Just joining us? Go to <a href="http://user2016.joecheng.com/signup/" class="uri">http://user2016.joecheng.com/signup/</a> to grab an RStudio Server account, where you’ll find these slides and the exercise files.</p>
+</div>
+</section>
+<section id="solution-1" class="slide level2">
+<h1>Solution</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(input, output, session) {
+
+  df &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+    <span class="kw">head</span>(cars, input$nrows)
+  })
+  
+  output$plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+    <span class="kw">plot</span>(<span class="kw">df</span>())
+  })
+  
+  output$table &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
+    <span class="kw">df</span>()
+  })
+}</code></pre></div>
+</section>
+<section id="anti-solution-1" class="slide level2">
+<h1>Anti-solution 1</h1>
+<pre><code>function(input, output, session) {
+
+  values &lt;- reactiveValues(df = cars)
+  observe({
+    values$df &lt;- head(cars, input$nrows)
+  })
+  
+  output$plot &lt;- renderPlot({
+    plot(values$df)
+  })
+  
+  output$table &lt;- renderTable({
+    values$df
+  })
+}</code></pre>
+</section>
+<section id="anti-solution-2" class="slide level2">
+<h1>Anti-solution 2</h1>
+<pre><code>function(input, output, session) {
+
+  df &lt;- cars
+  observe({
+    df &lt;&lt;- head(cars, input$nrows)
+  })
+  
+  output$plot &lt;- renderPlot({
+    plot(df)
+  })
+  
+  output$table &lt;- renderTable({
+    df
+  })
+}</code></pre>
+<aside class="notes">
+<p>Let’s forget about that last one, since it doesn’t work. What about the previous two? Let’s talk about what they do. The first one uses a reactive expression to store the calculation. The second one creates a reactive values object and uses an observer to keep the value up-to-date. Who prefers the first approach? Who prefers the second?</p>
+<p>So we mostly agree that the first approach is superior. But why? It might feel like I’m just setting up strawmen, but I see this kind of code all the time on the shiny-discuss mailing list. It seems obvious when we lay it bare with a minimal example like this, but in the context of a more complicated app, it can be much trickier.</p>
+<p>We shouldn’t take the second approach—but <em>why</em> shouldn’t we take it? What’s the first-principles reason to avoid this kind of code? We need some first-principles to build from so we can confidently answer these questions. You should be able to confidently answer these questions by the end of the tutorial.</p>
+</aside>
+</section>
+<section id="takeaway-1" class="slide level2 takeaway">
+<h1>Takeaway</h1>
+<h3 id="prefer-using-reactive-expressions-to-model-calculations-over-using-observers-to-set-reactive-variables.">Prefer using reactive expressions to model calculations, over using observers to set (reactive) variables.</h3>
+</section>
+<section id="exercise-2" class="slide level2">
+<h1>Exercise 2</h1>
+<p>Open up the file <code>Exercise_02.R</code>.</p>
+<p>This is a working app–you can go ahead and run it. You choose variables from the iris (yawn) data set, and on various tabs it shows information about the selected variables and fits a linear model.</p>
+<p>The problem right now, is that each of the four outputs contains copied-and-pasted logic for selecting out your chosen variables, and for building the model. Can you refactor the code so it’s more maintainable and efficient?</p>
+<p>You have 5 minutes.</p>
+<div class="tip">
+<p>Just joining us? Go to <a href="http://user2016.joecheng.com/signup/" class="uri">http://user2016.joecheng.com/signup/</a> to grab an RStudio Server account, where you’ll find these slides and the exercise files.</p>
+</div>
+</section>
+<section id="solution-2" class="slide level2">
+<h1>Solution</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">selected &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+  iris[, <span class="kw">c</span>(input$xcol, input$ycol)]
+})
+
+model &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+  <span class="kw">lm</span>(<span class="kw">paste</span>(input$ycol, <span class="st">&quot;~&quot;</span>, input$xcol), <span class="kw">selected</span>())
+})</code></pre></div>
+<aside class="notes">
+<p>Here’s what we’ve got: two reactive expressions, one of which depends on the other (<code>model</code> calls <code>selected()</code>).</p>
+<p>This is the cool thing about reactive expressions: they <em>compose</em>.</p>
+<p>(show diagram)</p>
+<p>If you think of Shiny apps as network graphs, then reactive values (like inputs) form one kind of leaf node; outputs and observers form another kind of leaf node; and reactive expressions are the nodes in the middle that can form arbitrarily deep links.</p>
+<p><strong>Ctrl-F3</strong> Once we have this beautiful (ok, not that beautiful, we’re going to work on it…) graph, Shiny can use it to optimize its calculations. It’s a little-known fact that Shiny outputs generally “know” when they’re not visible on the page, and suspend themselves. When they do that, they no longer cause reactive expressions to execute (because reactive expressions are <em>lazy</em>).</p>
+<p>In this case, we don’t have to perform the model fitting unless and until a different tab is selected.</p>
+</aside>
+</section>
+<section id="section" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-1.png" /></p>
+</section>
+<section id="section-1" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-1a.png" /></p>
+</section>
+<section id="section-2" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-1b.png" /></p>
+</section>
+<section id="section-3" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-2.png" /></p>
+</section>
+<section id="section-4" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-3.png" /></p>
+</section>
+<section id="section-5" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-4.png" /></p>
+</section>
+<section id="section-6" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-5.png" /></p>
+</section>
+<section id="section-7" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-6.png" /></p>
+</section>
+<section id="section-8" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-7.png" /></p>
+</section>
+<section id="section-9" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="reactive-graph-8.png" /></p>
+</section>
+<section id="anti-solution-3" class="slide level2">
+<h1>Anti-solution</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="co"># Don&#39;t do this!</span>
+  
+  <span class="co"># Introduce reactive value for each calculated value</span>
+  values &lt;-<span class="st"> </span><span class="kw">reactiveValues</span>(<span class="dt">selected =</span> <span class="ot">NULL</span>, <span class="dt">model =</span> <span class="ot">NULL</span>)
+  
+  <span class="co"># Use observers to keep the values up-to-date</span>
+  <span class="kw">observe</span>({
+    values$selected &lt;-<span class="st"> </span>iris[, <span class="kw">c</span>(input$xcol, input$ycol)]
+  })
+  
+  <span class="kw">observe</span>({
+    values$model &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">paste</span>(input$ycol, <span class="st">&quot;~&quot;</span>, input$xcol), values$selected)
+  })</code></pre></div>
+<aside class="notes">
+<p>We lose those advantages when we use observers and reactive values. The reactive graph doesn’t actually give you a good picture of the relationships between inputs, outputs, and calculations. Shiny is severely hindered from helping us make this app more efficient.</p>
+</aside>
+</section>
+<section id="takeaway-2" class="slide level2 takeaway">
+<h1>Takeaway</h1>
+<h3 id="seriously-prefer-using-reactive-expressions-to-model-calculations-over-using-observers-to-set-reactive-variables.">Seriously, prefer using reactive expressions to model calculations, over using observers to set (reactive) variables.</h3>
+</section>
+<section id="observers" class="slide level2">
+<h1>Observers</h1>
+</section>
+<section class="slide level2">
+
+<p>Observers are blocks of code that <strong>perform actions</strong>.</p>
+<p>They’re executed in response to changing reactive values/expressions.</p>
+<p>They don’t return a value.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">observe</span>({
+  <span class="kw">cat</span>(<span class="st">&quot;The value of input$x is now &quot;</span>, input$x, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+})</code></pre></div>
+</section>
+<section id="observers-come-in-two-flavors" class="slide level2">
+<h1>Observers come in two flavors</h1>
+<ol type="1">
+<li class="fragment"><strong>Implicit:</strong> Depend on <em>all</em> reactive values/expressions encountered during execution.<br />
+<code>observe({...})</code><br />
+ </li>
+<li class="fragment"><strong>Explicit:</strong> Just depend on <em>specific</em> reactive value/expression; ignore all others. (Also known as “event handler”.)<br />
+<code>observeEvent(eventExpr, {...})</code></li>
+</ol>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(input, output, session) {
+
+  <span class="co"># Executes immediately, and repeats whenever input$x changes.</span>
+  <span class="kw">observe</span>({
+    <span class="kw">cat</span>(<span class="st">&quot;The value of input$x is now &quot;</span>, input$x, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+  })
+  
+  <span class="co"># Only executes when input$upload_button is pushed. Any reactive</span>
+  <span class="co"># values/expressions encountered in the code block are treated</span>
+  <span class="co"># as non-reactive values/expressions.</span>
+  <span class="kw">observeEvent</span>(input$upload_button, {
+    httr::<span class="kw">POST</span>(server_url, jsonlite::<span class="kw">toJSON</span>(<span class="kw">dataset</span>()))
+  })
+}</code></pre></div>
+</section>
+<section id="exercise-3" class="slide level2">
+<h1>Exercise 3</h1>
+<p>Open <code>Exercise_03.R</code>.</p>
+<p>Add server logic so that when the <code>input$save</code> button is pressed, the data is saved to a CSV file called <code>&quot;data.csv&quot;</code> in the current directory.</p>
+<p>You have 5 minutes!</p>
+<div class="tip">
+<p>Just joining us? Go to <a href="http://user2016.joecheng.com/signup/" class="uri">http://user2016.joecheng.com/signup/</a> to grab an RStudio Server account, where you’ll find these slides and the exercise files.</p>
+</div>
+</section>
+<section id="solution-3" class="slide level2">
+<h1>Solution</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Use observeEvent to tell Shiny what action to take</span>
+<span class="co"># when input$save is clicked.</span>
+<span class="kw">observeEvent</span>(input$save, {
+  <span class="kw">write.csv</span>(<span class="kw">df</span>(), <span class="st">&quot;data.csv&quot;</span>)
+})</code></pre></div>
+</section>
+<section id="reactive-expressions-vs.observers" class="slide level2">
+<h1>Reactive expressions vs. observers</h1>
+</section>
+<section id="reactive" class="slide level2">
+<h1><code>reactive()</code></h1>
+<ol type="1">
+<li class="fragment">It <strong>can be called</strong> and <strong>returns a value</strong>, like a function. Either the last expression, or <code>return()</code>.</li>
+<li class="fragment">It’s <strong>lazy</strong>. It doesn’t execute its code until somebody calls it (even if its reactive dependencies have changed). Also like a function.</li>
+<li class="fragment">It’s <strong>cached</strong>. The first time it’s called, it executes the code and saves the resulting value. Subsequent calls can skip the execution and just return the value.</li>
+<li class="fragment">It’s <strong>reactive</strong>. It is notified when its dependencies change. When that happens, it clears its cache and notifies it dependents.</li>
+</ol>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">function(input, output, session) {
+  <span class="kw">reactive</span>({
+    <span class="co"># This code will never execute!</span>
+    <span class="kw">cat</span>(<span class="st">&quot;The value of input$x is now &quot;</span>, input$x, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+  })
+}</code></pre></div>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r1 &lt;-<span class="st"> </span>function() { <span class="kw">runif</span>(<span class="dv">1</span>) }
+<span class="kw">r1</span>()
+<span class="co"># [1] 0.8403573</span>
+<span class="kw">r1</span>()
+<span class="co"># [1] 0.4590713</span>
+<span class="kw">r1</span>()
+<span class="co"># [1] 0.9816089</span></code></pre></div>
+<div class="fragment">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r2 &lt;-<span class="st"> </span><span class="kw">reactive</span>({ <span class="kw">runif</span>(<span class="dv">1</span>) })
+<span class="kw">r2</span>()
+<span class="co"># [1] 0.5327107</span>
+<span class="kw">r2</span>()
+<span class="co"># [1] 0.5327107</span>
+<span class="kw">r2</span>()
+<span class="co"># [1] 0.5327107</span></code></pre></div>
+</div>
+</section>
+<section class="slide level2">
+
+<p>The fact that reactive expressions are <strong>lazy</strong> and <strong>cached</strong>, is critical.</p>
+<div class="fragment">
+<p>It’s <strong>hard to reason about</strong> when reactive expressions will execute their code—or whether they will be executed at all.</p>
+</div>
+<div class="fragment">
+<p>All Shiny guarantees is that <strong>when you ask a reactive expression for an answer, you get an up-to-date one</strong>.</p>
+</div>
+</section>
+<section id="observe-observeevent" class="slide level2">
+<h1><code>observe()</code> / <code>observeEvent()</code></h1>
+<ol type="1">
+<li class="fragment">It <strong>can’t be called</strong> and <strong>doesn’t return a value</strong>. The value of the last expression will be thrown away, as will values passed to <code>return()</code>.</li>
+<li class="fragment">It’s <strong>eager</strong>. When its dependencies change, it executes right away.</li>
+<li class="fragment">(Since it can’t be called and doesn’t have a return value, there’s no notion of caching that applies here.)</li>
+<li class="fragment">It’s <strong>reactive</strong>. It is notified when its dependencies change, and when that happens it executes (not right at that instant, but ASAP).</li>
+</ol>
+</section>
+<section class="slide level2">
+
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>reactive()</code></th>
+<th style="text-align: left;"><code>observe()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Callable</td>
+<td style="text-align: left;">Not callable</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Returns a value</td>
+<td style="text-align: left;">No return value</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lazy</td>
+<td style="text-align: left;">Eager</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cached</td>
+<td style="text-align: left;"><em>N/A</em></td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Don’t worry, there won’t be a quiz on this. All of this is to point the way towards the two things you <em>do</em> need to remember.</p>
+<p>This next slide is the reason I wanted to have this conference in the first place.</p>
+<p>Are you ready?</p>
+</aside>
+</section>
+<section class="slide level2">
+
+<ul>
+<li><p><code>reactive()</code> is for <em>calculating values, without side effects</em>.</p></li>
+<li><p><code>observe()</code> is for <em>performing actions, with side effects</em>.</p></li>
+</ul>
+<aside class="notes">
+<p>This is what each of these is good for. Do not use an <code>observe</code> when calculating a value, and especially don’t use <code>reactive</code> for performing actions with side effects.</p>
+</aside>
+</section>
+<section class="slide level2">
+
+<p>A <strong>calculation</strong> is a block of code where you don’t care about whether the code actually executes—you just want the answer. Safe for caching. <strong>Use <code>reactive()</code>.</strong></p>
+<p>An <strong>action</strong> is where you care very much that the code executes, and there is no answer (return value), only side effects. <strong>Use <code>observe()</code>/<code>observeEvent()</code>.</strong></p>
+<div class="fragment">
+<p>(What if you want both an answer AND you want the code to execute? Refactor into two code chunks–separate the calculation from the action.)</p>
+</div>
+</section>
+<section class="slide level2">
+
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: left;"><code>reactive()</code></th>
+<th style="text-align: left;"><code>observe()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Purpose</strong></td>
+<td style="text-align: left;">Calculations</td>
+<td style="text-align: left;">Actions</td>
+</tr>
+<tr class="even">
+<td><strong>Side effects?</strong></td>
+<td style="text-align: left;">Forbidden</td>
+<td style="text-align: left;">Allowed</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="an-easy-way-to-remember" class="slide level2">
+<h1>An easy way to remember</h1>
+<p><span class="fragment">Keep your side effects</span><br />
+<span class="fragment">Outside of your reactives</span><br />
+<span class="fragment">Or I will kill you</span></p>
+<p><span class="fragment"><em>—Joe Cheng</em></span></p>
+</section>
+<section id="takeaway-3" class="slide level2 takeaway">
+<h1>Takeaway</h1>
+<h3 id="use-reactive-expressions-for-calculations-no-side-effects.-use-observers-for-actions-side-effects.">Use reactive expressions for calculations (no side effects). Use observers for actions (side effects).</h3>
+</section>
+<section id="takeaways" class="slide level2 takeaways">
+<h1>Takeaways</h1>
+<ul>
+<li class="fragment">Know the difference between telling Shiny <em>to</em> do something, and telling Shiny <em>how to</em> do something.</li>
+<li class="fragment">Prefer using reactive expressions to model calculations, over using observers to set (reactive) variables.</li>
+<li class="fragment">Seriously, prefer using reactive expressions to model calculations, over using observers to set (reactive) variables.</li>
+<li class="fragment">Use reactive expressions for calculations (no side effects). Use observers for actions (side effects).</li>
+<li class="fragment">When necessary, you can use observers and reactive values together to escape the usual limits of reactivity.</li>
+</ul>
+</section>
+<section id="other-topics" class="slide level2">
+<h1>Other topics</h1>
+<ul>
+<li><code>eventReactive</code> - <code>observe</code> : <code>observeEvent</code> = <code>reactive</code> : <code>eventReactive</code></li>
+<li><code>isolate</code> - Blocking reactivity</li>
+<li><code>reactiveValues</code> - Used in concert with <code>observe</code>/<code>observeEvent</code>, when you can’t model your app logic using the reactive graph</li>
+<li><code>invalidateLater</code> - Time-based reactivity (and so much more)</li>
+<li><code>validate</code> and <code>req</code> - Elegant mechanisms for dealing with missing inputs and failed preconditions</li>
+<li><code>shinySignals</code> - Higher order reactives by Hadley</li>
+</ul>
+</section>
+<section id="checking-preconditions-with-req" class="slide level2">
+<h1>Checking preconditions with <code>req()</code></h1>
+<p>Sometimes a computation depends on inputs or values that may or may not be available.</p>
+<ul>
+<li>Needs user to make a choice for which no reasonable default exists</li>
+<li>Depends on data that must be uploaded by the user</li>
+<li>Reads an input that doesn’t initially exist as part of the page, but rather, is part of a <code>uiOutput</code></li>
+</ul>
+<p>See <code>req_v1_broken.R</code></p>
+</section>
+<section id="naive-solution-returnnull" class="slide level2">
+<h1>Naive solution: <code>return(NULL)</code></h1>
+<p><strong>Check for these conditions (mostly using <code>is.null()</code> or <code>== &quot;&quot;</code>) and <code>return(NULL)</code></strong></p>
+<p>This works, but now everyone that reads this reactive must also check for <code>NULL</code> and return early, and so on, layer after layer…</p>
+<p>See <code>req_v2_badfix.R</code></p>
+</section>
+<section id="can-we-do-better" class="slide level2">
+<h1>Can we do better?</h1>
+<p>When we detect an unmet precondition, we don’t really want to return a <code>NULL</code> result; it makes more sense to treat it like an error:</p>
+<p><code>stopifnot(!is.null(input$dataset))</code></p>
+<p>Except that for these cases, we don’t want red error messages in the UI, and we don’t want observers to panic due to uncaught exceptions.</p>
+</section>
+<section id="correct-solution-use-req" class="slide level2">
+<h1>Correct solution: Use <code>req()</code></h1>
+<p><code>req()</code> is like a custom version of <code>stopifnot</code> that:</p>
+<ol type="1">
+<li>Doesn’t show an error message in Shiny, and doesn’t cause observers to panic</li>
+<li>Performs some common “truthy/falsy” tests to save you some typing (see <code>?req</code> for details)</li>
+</ol>
+<p>See <code>req_v3_goodfix.R</code></p>
+</section>
+<section id="coming-soon" class="slide level2">
+<h1>Coming soon</h1>
+<ul>
+<li>Bookmarkable state</li>
+<li>Database improvements and best practices</li>
+<li><code>insertUI</code>/<code>removeUI</code></li>
+<li>Modal dialogs and notifications</li>
+<li>Automatically reconnect on grey-out (opt-in)</li>
+<li>reactlog now shows elapsed time for reactive expressions and observers</li>
+<li>Better looking <code>tableOutput</code></li>
+</ul>
+</section>
+<section id="insertuiremoveui" class="slide level2">
+<h1><code>insertUI</code>/<code>removeUI</code></h1>
+<p>New functions that complement <code>uiOutput</code>/<code>renderUI</code>.</p>
+<pre><code>- `uiOutput` populates a div reactively (`renderUI`); each invocation of the `renderUI` code *replaces* the entire div.
+- `insertUI` is used to *add* new UI to the page; nothing is removed or replaced.
+- `removeUI` removes specific HTML elements from the page.</code></pre>
+<p>Makes some types of apps much easier to code. (“How do I implement an ‘Add plot’ button?”)</p>
+<p>Demo: <code>shiny::runApp(&quot;insertui.R&quot;)</code> (try uploading <code>iris.csv</code>)</p>
+</section>
+<section id="shiny-and-databases" class="slide level2">
+<h1>Shiny and databases</h1>
+<ul>
+<li>Q: “Can Shiny apps use databases?”<br />
+A: “Uh, obviously… it’s just R…”</li>
+<li>But there is a difference between using databases interactively, and using them in deployed apps</li>
+<li>Managing database connections</li>
+<li>Handling potentially malicious input safely</li>
+<li>The solution is part code, part public service announcements (see new “Databases” section of <a href="http://shiny.rstudio.com/articles">shiny.rstudio.com/articles</a>)</li>
+</ul>
+</section>
+<section id="sql-injection" class="slide level2">
+<h1>SQL injection</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">paste0</span>(
+  <span class="st">&quot;SELECT * FROM table WHERE id = &#39;&quot;</span>,
+  input$id,
+  <span class="st">&quot;&#39;;&quot;</span>)
+<span class="kw">dbGetQuery</span>(conn, query)</code></pre></div>
+<p>(It’s just a SELECT query; could go wrong?)</p>
+</section>
+<section id="section-10" class="slide level2 reactive-graph" data-background="white">
+<h1></h1>
+<p><img src="bobbytables.png" /></p>
+<p><a href="https://xkcd.com/327/" class="uri">https://xkcd.com/327/</a></p>
+</section>
+<section id="use-interpolation" class="slide level2">
+<h1>Use interpolation</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">query &lt;-<span class="st"> </span><span class="kw">sqlInterpolate</span>(conn,
+  <span class="st">&quot;SELECT * FROM table WHERE id = ?id;&quot;</span>,
+  <span class="dt">id =</span> input$id)
+<span class="kw">dbGetQuery</span>(conn, query)</code></pre></div>
+<p>If you ever find yourself <code>paste</code>-ing together SQL queries, alarm bells should sound in your head!</p>
+<p>By using <code>sqlInterpolate</code>, you’re protected against SQL injection.</p>
+<p>(Still better are <em>prepared statements</em>—coming to DBI soon!)</p>
+</section>
+<section id="bookmarkable-state" class="slide level2">
+<h1>Bookmarkable state</h1>
+<ul>
+<li>Allow users to interact with an app, then “snapshot” the resulting state as a URL that can be bookmarked or shared</li>
+<li>One of the longest-standing feature requests in Shiny</li>
+<li>Custom solutions built by many people in many ways over the years, but surprisingly hard to generalize</li>
+<li>Our solution is informed by prior work by Vincent Nijs (<a href="https://github.com/vnijs/radiant">radiant</a>) and Andrzej Oleś (<a href="https://github.com/aoles/shinyURL">shinyURL</a>)</li>
+</ul>
+</section>
+<section id="bookmarkable-state-1" class="slide level2">
+<h1>Bookmarkable state</h1>
+<ul>
+<li>Natively integrated into Shiny—cleaner syntax, better user experience, more robust restore logic</li>
+<li>Highly configurable</li>
+<li>Automatic save/restore of inputs; manual save/restore of custom values and/or filesystem data</li>
+<li>Either <strong>encode</strong> these values directly in (long/ugly) URL, or <strong>persist</strong> them on the server and return a short URL with an ID</li>
+<li>Currently on a branch (<a href="mailto:wch/shiny@bookmarkable-state">wch/shiny@bookmarkable-state</a>) for testing; hopefully landing on master within two or three weeks</li>
+</ul>
+</section>
+<section id="preparing-your-app" class="slide level2">
+<h1>Preparing your app</h1>
+<ol type="1">
+<li><p>Wrap your UI in function(req):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ui &lt;-<span class="st"> </span>function(req) {
+  <span class="kw">fluidPage</span>(...)
+}</code></pre></div></li>
+<li>Add <code>saveStateButton()</code> to UI</li>
+<li>In server function, call <code>configureBookmark(...)</code></li>
+<li><p>If necessary, provide your own callback functions to customize saving/restoring behavior</p></li>
+</ol>
+</section>
+<section id="bookmarkable-state-demo" class="slide level2">
+<h1>Bookmarkable state demo</h1>
+<p><code>shiny::runApp(&quot;bookmark.R&quot;)</code></p>
+</section>
+<section id="deploying" class="slide level2">
+<h1>Deploying</h1>
+<ul>
+<li>For <code>configureBookmark(type=&quot;persist&quot;)</code>, server support is necessary</li>
+<li>Shiny Server, Shiny Server Pro, and RStudio Connect support coming this summer</li>
+<li>ShinyApps.io support TBD (can still use encode mode)</li>
+</ul>
+</section>
+    </div>
+  </div>
+
+  <script src="slides_files/reveal.js-3.2.0/lib/js/head.min.js"></script>
+  <script src="slides_files/reveal.js-3.2.0/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Vertical centering of slides
+        center: false,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: []
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
