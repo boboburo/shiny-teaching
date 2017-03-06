@@ -1,0 +1,168 @@
+---
+title: "Recap Session Shiny Session I"
+date: "02-Mar-2017"
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(shiny)
+library(ggplot2)
+```
+
+## Intro 
+
+- Note this is running a RStudio *ioslisde_presentation*
+
+
+## Example2 - User Inputs
+
+```{r example2, echo = T, eval = F, tidy = F}
+ui <- shinyUI(fluidPage(
+  textInput("identity", "Who are you?", value = "World"),
+  selectInput("language","What language would you like?", 
+              choices = c("English" =  "Hi", 
+                          "Irish" = "Dia Duit", 
+                          "Hindi" = "Namaste"),
+              selected = c("Hi")),
+  textOutput("helloAns")
+))
+
+server <- shinyServer(function(input, output) {
+  output$helloAns <- renderText({
+    paste(input$language,input$identity)
+  })
+})
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
+<div class="notes">
+This is my *note*.
+
+- It can contain markdown
+- like this list
+
+</div>
+
+## User Inputs
+
+```{r example2, echo = F, eval = T}
+```
+
+## Example 3 - Layouts 
+
+```{r example3, echo = T, eval = F, tidy = F}
+ui <- shinyUI(fluidPage(
+  
+  sidebarLayout(
+    sidebarPanel(
+ 
+      checkboxInput("dummyBox","Check and uncheck"),
+      sliderInput("dummySlider","Move the slider",
+                  min = 0,max = 1,value = 0.5)
+    ), #end of sidebarPanel
+    
+    mainPanel(
+      tabsetPanel(
+      tabPanel("Tab1",h1("In the first tab")),
+      tabPanel("Tab2", h2("In the second tab")))
+    )
+  )#end of sidebarLayout
+)#end of fluidPage
+)#end of UI
+
+server <- shinyServer(function(input, output) {})
+
+shinyApp(ui = ui, server = server)
+```
+
+## Layouts 
+
+```{r example3, echo=F, eval = T}
+```
+
+## Example 4 - Interactive Plot
+
+```{r example4, echo = T, eval = F}
+ui <- shinyUI(fluidPage(
+   fluidRow(
+    column(4,selectInput("col", "Choose numeric column to graph:",
+                         choices = c(colnames(diamonds[,sapply(diamonds, is.numeric)])))
+    ),
+    column(4,sliderInput("numBins","Choose number of bins",min = 5,max = 30,value = 10)
+    ),
+    column(4,numericInput("numRows", "Number of rows to view:", 5)
+    )),#end of fluidRow
+
+fluidRow(
+  column(6,plotOutput("diaHist")
+         ),
+  column(6,tableOutput("diaRows")
+         )) #end fluidRow
+))
+
+server <- shinyServer(function(input, output) {
+  
+  # Show the first "n" observations
+  output$diaRows <- renderTable({ head(diamonds[,1:5], input$numRows) })
+  
+  # Create histogram 
+  output$diaHist = renderPlot({
+    ggplot(diamonds, aes_string(x=input$col)) + geom_histogram(bins = input$numBins)
+  })
+  
+})
+
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
+## Interactive Plot
+
+```{r example4, echo=F, eval =T}
+```
+
+## Test Widgets
+
+```{r thecode, eval=require('DT'), tidy=FALSE}
+DT::datatable(
+  head(iris, 10),
+  fillContainer = FALSE, options = list(pageLength = 5)
+)
+```
+
+
+## Test Widgets Code
+
+```{r thecode, eval=FALSE, echo=TRUE}
+```
+
+## Slide with Interactive Plot
+
+```{r thecode2, echo=FALSE, warning=FALSE, message=FALSE}
+shinyApp(options = list(width = "100%", height = "700px"),
+  ui = (fluidPage(inputPanel(
+    selectInput("n_breaks", label = h3("Number of bins:"), 
+                choices = c(10, 20, 35, 50), selected = 20),
+    sliderInput("bw_adjust", label = h3("Bandwidth:"), 
+                min = 0.2, max = 2, value = 1, step = 0.2)),
+    plotOutput("stuff", height = "650px"))),
+
+server = function(input,output,session) {
+  output$stuff = renderPlot({
+    hist(faithful$eruptions, probability = TRUE, 
+         breaks = as.numeric(input$n_breaks), xlab = "Duration (minutes)", 
+         main = "Geyser eruption duration", col = "bisque", border = 1)
+    dens <- density(faithful$eruptions, adjust = input$bw_adjust, 
+                    lwd = 2, col = "blue")
+    lines(dens, col = "blue")})
+  })
+```
+
+### Code
+
+```{r thecode2, eval=FALSE}
+```

@@ -1,0 +1,17 @@
+---
+title: "threejs-Les Miserables"
+author: "Brian Carter"
+date: "06-Mar-2017"
+output: html_document
+---
+
+```{r threejsExample1, echo=T, eval = T, warning = F, message = F, error=F}
+#Les Miserable Character Interactions
+library(threejs)
+data(LeMis)
+
+graphjs(LeMis, vertex.shape = "sphere",  left = "500px",
+        font.main = "16px Arial",
+        layout = layout_with_fr(LeMis,dim=3, niter=30), 
+        main=c("Force Layout of Les Miserables Character Interactions"))
+```

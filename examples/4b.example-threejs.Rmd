@@ -1,0 +1,14 @@
+---
+title: "threejs-facebook-network"
+author: "Brian"
+date: "6/3/2017"
+output: html_document
+---
+
+```{r threejsExample2, echo=T, eval = T, warning = F, message = F, error=F}
+#Stanford SNAP network analysis library - facebook subset , 4k vertices, 80k edges
+library(threejs)
+data(ego)
+graphjs(ego, bg="black")
+```
+

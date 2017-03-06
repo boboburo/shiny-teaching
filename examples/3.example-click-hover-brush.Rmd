@@ -1,0 +1,212 @@
+---
+title: "plot-interactivity"
+author: "Brian"
+date: "5/3/2017"
+output: html_document
+---
+
+```{r}
+library(shiny)
+library(ggplot2)
+```
+
+## Static Plot
+
+```{r staticplot}
+# A demonstration of clicking, hovering, and brushing
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      h4("Static Plot"),
+      column(width = 6,plotOutput("plot"))
+  )
+))
+
+server <- function(input, output, session) {
+   output$plot <- renderPlot({
+      ggplot(mtcars,aes(mpg,drat)) + geom_point()
+    })
+}
+ 
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
+## Plot with click point
+
+```{r clickplot}
+# A demonstration of clicking and x , y co-ordinates
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      h4("Plot with point clicks"),
+      column(width = 6,
+             plotOutput("plot", click = clickOpts(id="plot_click"))
+            ),
+      column(width = 6),
+            textOutput("text")
+  )
+))
+
+server <- function(input, output, session) {
+   output$plot <- renderPlot({
+      ggplot(mtcars,aes(mpg,drat)) + geom_point()
+    })
+   output$text <- renderText({
+     paste0("The x-cordinate of click is ", input$plot_click$x,
+            "\nThe y-cordinate of click is ", input$plot_click$y)
+   })
+}
+
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
+## Plot with click point
+
+```{r clickplot}
+# A demonstration of clicking, hovering, and brushing
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      column(width = 6,
+              h4("Plot with point clicks"),
+             plotOutput("plot", click = clickOpts(id="plot_click"))
+            ),
+      column(width = 6,
+              h4("Table of clicked points"), 
+            tableOutput("table")
+  )
+)))
+
+server <- function(input, output, session) {
+  
+    output$plot <- renderPlot({
+      ggplot(mtcars,aes_string("mpg","drat")) + geom_point()
+    })
+
+ 
+  output$table <- renderTable({
+      #threshold is pixels 
+     nearPoints(mtcars, input$plot_click, threshold = 20) 
+     })
+}
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+
+#Using nearPoints to select actual points on the plot based on the x,y co-ordinates of the click
+```
+
+## Hover Points
+
+```{r clickplot}
+# A demonstration of clicking, hovering, and brushing
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      column(width = 6,
+               h4("Plot with point clicks"),
+             plotOutput("plot",  hover = hoverOpts(id = "plot_hover", delayType = "throttle"))
+            ),
+      column(width = 6,
+              h4("Table of hovered points"), 
+            tableOutput("table")
+  )
+)))
+
+server <- function(input, output, session) {
+  
+    output$plot <- renderPlot({
+      ggplot(mtcars,aes(mpg,drat)) + geom_point()
+    })
+
+ 
+  output$table <- renderTable({
+      #threshold is pixels 
+     nearPoints(mtcars, input$plot_hover, threshold = 20) 
+     })
+}
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+#Same as click but hovering 
+```
+
+## Brushing
+
+
+
+```{r}
+# A demonstration of clicking, hovering, and brushing
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      column(width = 6,
+               h4("Plot with point clicks"),
+             plotOutput("plot",  brush = brushOpts(id = "plot_brush"))
+            ),
+      column(width = 6,
+              h4("Table of burshed points"), 
+            tableOutput("table")
+      )
+    )
+))
+
+server <- function(input, output, session) {
+  
+    output$plot <- renderPlot({
+      ggplot(mtcars,aes(mpg,drat)) + geom_point()
+    })
+    
+  output$table <- renderTable({
+      #threshold is pixels 
+      brushedPoints(mtcars, input$plot_brush)
+     })
+}
+
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
+## Brushing Extended
+
+
+```{r}
+# A demonstration of clicking, hovering, and brushing
+ui <- shinyUI(fluidPage(
+    fluidRow(
+      column(width = 6,
+               h4("Plot with point clicks"),
+             plotOutput("plot",  brush = brushOpts(id = "plot_brush"))
+            ),
+      column(width = 6,
+              h4("Table of burshed points"), 
+            tableOutput("table")
+  )),
+  fluidRow(
+    column(width=6,
+           h4("Histogram of MPG"),
+           plotOutput("plot_mpg")),
+    column(width=6,
+           h4("Histogram of DRAT"),
+           plotOutput("plot_drat"))
+    )
+))
+
+
+server <- function(input, output, session) {
+  
+    output$plot <- renderPlot({
+      ggplot(mtcars,aes(mpg,drat)) + geom_point()
+    })
+    
+    brushed_data <- reactive({brushedPoints(mtcars,input$plot_brush)})
+    
+    output$table <- renderTable({brushed_data()})
+    
+    output$plot_mpg <- renderPlot({
+      ggplot(mtcars,aes(mpg)) + 
+        geom_histogram(bins = 30, fill = "red", alpha = 0.2) +
+        geom_histogram(data=brushed_data(), bins = 30, fill = "blue", alpha = 0.2)
+      })
+    
+    output$plot_drat <- renderPlot({
+      ggplot(mtcars,aes(drat)) + 
+        geom_histogram(bins = 30, fill = "red", alpha = 0.2) +
+        geom_histogram(data=brushed_data(), bins = 30, fill = "blue", alpha = 0.2)
+      })
+    
+}
+
+shinyApp(ui = ui, server = server ,options = list(launch.browser =T))
+```
+
